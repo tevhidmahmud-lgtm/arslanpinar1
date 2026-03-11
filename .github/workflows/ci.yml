@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: yenisite_1/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ./yenisite_1
+    
+    - name: Run linter
+      run: npm run lint
+      working-directory: ./yenisite_1
+    
+    - name: Build project
+      run: npm run build
+      working-directory: ./yenisite_1
+    
+    - name: Run tests (if any)
+      run: npm test
+      working-directory: ./yenisite_1
+      continue-on-error: true
